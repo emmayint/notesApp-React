@@ -19,8 +19,9 @@ https://redis.io/download
 - Start from same directory as redis server
 - `./src/redis-cli`
 - View commands here: https://redis.io/commands
-- View all keys with `LIST *`
+- View all keys with `KEYS *`
 - Try to view a key with `GET myKey`
+- Try delete `DEL myKey`
 
 
 # Lab todo:
