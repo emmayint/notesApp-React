@@ -18,7 +18,7 @@ app.use((req, res, next) => {
 })
 
 app.get('/service1/*', (req, res) => {
-  console.log(req.cookies)
+  cosnsole.log(req.cookies)
   client.set('myKey', 'myValue', 'EX', 3000);
   res.send("ads");
 });
