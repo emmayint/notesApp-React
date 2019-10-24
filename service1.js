@@ -26,24 +26,33 @@ app.use((req, res, next) => {
   client.get(key, (err, cachedValue) => {
     console.log(err);
     console.log('cached value is', cachedValue);
-    if (cachedValue) {
+    if (cachedValue !== null) {
       console.log('cache hit');
-    } else {
-      console.log('cache miss');
-    }
-  });
-
-  axios.post('http://localhost:3002/service2/', body)
-    .then((res) => {
-      if (res.data.valid) {
-        client.set(key, 'true', 'EX', 3000);
+      if (cachedValue === 'true') {
         return next();
       } else {
         res.status(403);
         return res.send('You need access to this endpoint!');
       }
-    })
-    .catch(console.log);
+    } else {
+      console.log('cache miss');
+      // move rest of code in here
+      axios.post('http://localhost:3002/service2/', body)
+        .then((res) => {
+          if (res.data.valid) {
+            client.set(key, true);
+            return next();
+          } else {
+            client.set(key, false);
+            res.status(403);
+            return res.send('You need access to this endpoint!');
+          }
+        })
+        .catch(console.log);
+    }
+  });
+
+
   // if (false) { // validation check
   //   return next();
   // } else {
