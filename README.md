@@ -17,7 +17,7 @@ https://redis.io/download
 
 # Testing redis cli
 - Start from same directory as redis server
-- `./src/redis-server`
+- `./src/redis-cli`
 - View commands here: https://redis.io/commands
 - View all keys with `LIST *`
 - Try to view a key with `GET myKey`
