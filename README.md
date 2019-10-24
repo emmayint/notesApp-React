@@ -1,11 +1,4 @@
-# Microservice architecture
-
-Start by manually testing all servers
-- Turn all servers on 
-- Visit each one individually
-- Visit them through the gateway
-- Run services throuh pm
-- Make a rest call from the front end to each service
+# Validation
 
 # downloading redis mac/linux
 https://redis.io/download
@@ -22,5 +15,21 @@ https://redis.io/download
 - https://redis.io/commands
 - Used for syncing variables across instances, caching and broadcasting updates
 
-# Dev purposes
-For dev mode, you can proxy the gateway behind react dev server (Needs websocket to work)
+# Testing redis cli
+- Start from same directory as redis server
+- `./src/redis-server`
+- View commands here: https://redis.io/commands
+- View all keys with `LIST *`
+- Try to view a key with `GET myKey`
+
+
+# Lab todo:
+- Add username/password field, and a button
+- On click send the username/password combo to service 2 to validate 
+- Store username and hashed password as cookie
+- Add a new button that makes a request to service 1
+- From service 1, validate the request by asking service 2
+- Cache the response in service 1.
+- Verify subsequent hits to service 1 do not hit service 2 for the timeout period
+
+![cache](cache.png "cache")
