@@ -80,8 +80,8 @@ const App = ({ activeUsers }) => {
       <Switch>
         <Route path="/" component={Home} />
       </Switch>
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+      <header className="login">
+        {/* <img src={logo} className="App-logo" alt="logo" /> */}
         <input value={username} onChange={e => setUsername(e.target.value)} />
         <input
           type="password"

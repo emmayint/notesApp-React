@@ -1,4 +1,4 @@
-// frontend couting user
+// frontend counting user
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
