@@ -1,3 +1,12 @@
+# EC2 Ubuntu setup
+## Mongodb
+sudo systemctl start mongod
+systemctl status mongod
+sudo service mongod stop
+##redis
+cd redis-stable
+redis-server
+
 # Validation
 
 # downloading redis mac/linux
