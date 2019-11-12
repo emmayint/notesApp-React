@@ -1,5 +1,3 @@
-import { bindActionCreators } from "../../../../../../Library/Caches/typescript/3.6/node_modules/redux";
-
 const DEFAULT_STATE = {
   notes: ["test"]
 };
