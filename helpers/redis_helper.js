@@ -1,1 +1,2 @@
-// holdes redis functionality
+// holds redis functionality. why? DISPLAY TOTAL # OF USERS ACROSS TWO MICROSERVICES?...
+

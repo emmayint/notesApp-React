@@ -11,20 +11,39 @@ const port = 3002;
  * res: { status: boolean(whether account credentials are valid), token: string }
  */
 app.post("/service2/login", (req, res) => {
-  counter++;
-  console.log("count", counter);
-  console.log(req.body);
-  let valid = false;
-  if (
-    req.body.username === "existinmongodb" &&
-    req.body.password === "202cb962ac59075b964b07152d234b70"
-  ) {
-    valid = true;
+  const username = req.body.username;
+  const password = req.body.password;
+
+  if (!username || !password) {
+    return res.send({
+      status: false,
+      token: ''
+    });
   }
-  console.log(valid);
-  res.send({
-    valid
+  // check if credentials are invalid
+  if ( false ) {
+    // if true, send invalid
+    return res.send({
+      status: false,
+      token: ''
+    });
+  }
+  
+  // generate token? Or use same token, generate once on creation?...
+  const token = '';
+  // simple check if valid response
+  if(token) {
+    return res.send({
+      status: true,
+      token
+    });
+  }
+  // otherwise some error occurred...
+  return res.send({
+    status: false,
+    token: ''
   });
+
 });
 
 /**
@@ -38,7 +57,7 @@ app.post("/service2/auth", (req, res) => {
     return res.send({ status: false });
   }
   // check if token in db or redis store? 
-  if (  ) {
+  if ( false ) {
 
     // blah blah
     return res.send({ status: true });
@@ -53,7 +72,43 @@ app.post("/service2/auth", (req, res) => {
  * res: { status: boolean(whether account was created or not), token: string }
  */
 app.post("/service2/create", (req, res) => {
+  const username = req.body.username;
+  const password = req.body.password;
+
+  if (!username || !password) {
+    return res.send({
+      status: false,
+      token: ''
+    });
+  }
+  
+  // check if username is in db.
+  if ( false ) {
+    // if true, send invalid
+    return res.send({
+      status: false,
+      token: ''
+    });
+  } else {
+    // create new account
+  }
+
+  // generate token? Or use same token, generate once on creation?...
+  const token = '';
+  // simple check if valid response
+  if(token) {
+    return res.send({
+      status: true,
+      token
+    });
+  }
+  // otherwise some error occurred...
+  return res.send({
+    status: false,
+    token: ''
+  });
 
 });
+
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
