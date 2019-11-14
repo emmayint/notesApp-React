@@ -1,114 +1,125 @@
 // AuthServer
 const express = require("express");
 const app = express();
-app.use(express.json());
+const { MongoClient, ObjectID } = require('mongodb');
 
+app.use(express.json());
+// service port
 const port = 3002;
 
-/**
- * Determines if a user's credentials are valid. If so, return a token that can be used for recurring requests
- * req.body: { username: string, password: string }
- * res: { status: boolean(whether account credentials are valid), token: string }
- */
-app.post("/service2/login", (req, res) => {
-  const username = req.body.username;
-  const password = req.body.password;
+// Connection URL
+const url = 'mongodb://localhost:27017';
 
-  if (!username || !password) {
-    return res.send({
-      status: false,
-      token: ''
-    });
+// Database Name
+const dbName = 'best_notes';
+
+// Create a new MongoClient
+const client = new MongoClient(url);
+
+// connect to server
+client.connect((err) => {
+  if (err) {
+    console.log(err);
+    process.exit(1);
   }
-  // check if credentials are invalid
-  if ( false ) {
-    // if true, send invalid
-    return res.send({
-      status: false,
-      token: ''
+
+  console.log("Connected successfully to server");
+  const db = client.db(dbName);
+
+  // create collection. If already exists, ignores by default
+  const collection = db.collection('users', function(err, collection) {});
+
+  /**
+   * Determines if a user's credentials are valid. If so, return a token that can be used for recurring requests
+   * req.body: { username: string, password: string }
+   * res: { valid: boolean(whether account credentials are valid), token: string }
+   */
+  app.post("/service2/login", async (req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    if (!username || !password) {
+      return res.send({
+        valid: false,
+      });
+    }
+    await collection.findOne({ username })
+    .then((response) => {
+      if ( response && response.password === password ) {
+        return res.send({
+          valid: true,
+        });
+      } else {
+        return res.send({
+          valid: false,
+        });
+      }
+    })
+    .catch((e) => {
+      console.log(e.message);
+      return res.send({
+        valid: false
+      });
     });
-  }
-  
-  // generate token? Or use same token, generate once on creation?...
-  const token = '';
-  // simple check if valid response
-  if(token) {
-    return res.send({
-      status: true,
-      token
-    });
-  }
-  // otherwise some error occurred...
-  return res.send({
-    status: false,
-    token: ''
   });
 
-});
+  /**
+   * Function creates a new user if username not already in database.)
+   * req.body: { username: string, password: string }
+   * res: { valid: boolean(whether account was created or not), message: 'Some custom message'}
+   */
+  app.post("/service2/create", async (req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
+    
 
-/**
- * Function determines if given token is a valid one...
- * req.body: { token: string }
- * res: { status: boolean }
- */
-app.post("/service2/auth", (req, res) => {
-  const token = req.body.token;
-  if (!token) {
-    return res.send({ status: false });
-  }
-  // check if token in db or redis store? 
-  if ( false ) {
+    if (!username || !password) {
+      return res.send({
+        valid: false,
+        message: 'Username or Password fields are missing'
+      });
+    }
 
-    // blah blah
-    return res.send({ status: true });
-  }
-  // after all else
-  return res.send({ status: false });
-});
-
-/**
- * Function creates a new user if username not already in database.)
- * req.body: { username: string, password: string }
- * res: { status: boolean(whether account was created or not), token: string }
- */
-app.post("/service2/create", (req, res) => {
-  const username = req.body.username;
-  const password = req.body.password;
-
-  if (!username || !password) {
-    return res.send({
-      status: false,
-      token: ''
+    // find user based off of user name
+    await collection.findOne({ username })
+    .then((response) => {
+      if ( response != null ) {
+        // user exists
+        console.log('Username exists');
+        return res.send({
+          valid: false,
+          message: 'User already exists'
+        });
+      }
+    })
+    .catch((e) => {
+      console.log(e.message);
+      // // should let this through?
+      // return res.send({
+      //   valid: false,
+      //   message: 'Something went wrong with searching db'
+      // });
     });
-  }
-  
-  // check if username is in db.
-  if ( false ) {
-    // if true, send invalid
-    return res.send({
-      status: false,
-      token: ''
-    });
-  } else {
     // create new account
-  }
-
-  // generate token? Or use same token, generate once on creation?...
-  const token = '';
-  // simple check if valid response
-  if(token) {
-    return res.send({
-      status: true,
-      token
+    let document = {username, password};
+    // w:1 ensures key is placed in properly
+    await collection.insertOne(document)
+    .then((response) => {
+      if ( response ) {
+        return res.send({
+          valid: true,
+          message: 'Welcome!'
+        });
+      }
+    })
+    .catch((e) => {
+      console.log(e.message);
+      return res.send({
+        valid: false,
+        message: 'Something went wrong with writing db'
+      });
     });
-  }
-  // otherwise some error occurred...
-  return res.send({
-    status: false,
-    token: ''
   });
-
 });
-
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

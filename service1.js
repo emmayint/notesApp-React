@@ -42,7 +42,7 @@ app.use((req, res, next) => {
       console.log("cache miss");
       // move rest of code in here
       axios
-        .post("http://localhost:3004/service2/", body)
+        .post("http://localhost:3004/service2/login", body)
         .then(res => {
           if (res.data.valid) {
             client.set(key, true);
