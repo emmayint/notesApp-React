@@ -34,7 +34,7 @@ client.connect((err) => {
    * req.body: { username: string, password: string }
    * res: { valid: boolean(whether account credentials are valid), token: string }
    */
-  app.post("/service2/login", async (req, res) => {
+  app.post("/service2/login", (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
 
@@ -43,9 +43,10 @@ client.connect((err) => {
         valid: false,
       });
     }
-    await collection.findOne({ username })
+    collection.findOne({ username })
     .then((response) => {
       if ( response && response.password === password ) {
+        console.log("Loggin user in");
         return res.send({
           valid: true,
         });
@@ -68,7 +69,7 @@ client.connect((err) => {
    * req.body: { username: string, password: string }
    * res: { valid: boolean(whether account was created or not), message: 'Some custom message'}
    */
-  app.post("/service2/create", async (req, res) => {
+  app.post("/service2/create", (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
     
@@ -80,9 +81,8 @@ client.connect((err) => {
       });
     }
 
-    // find user based off of user name
-    await collection.findOne({ username })
-    .then((response) => {
+    const checkExists = (err, response) => {
+      console.log("Checking")
       if ( response != null ) {
         // user exists
         console.log('Username exists');
@@ -90,35 +90,36 @@ client.connect((err) => {
           valid: false,
           message: 'User already exists'
         });
-      }
-    })
-    .catch((e) => {
-      console.log(e.message);
-      // // should let this through?
-      // return res.send({
-      //   valid: false,
-      //   message: 'Something went wrong with searching db'
-      // });
-    });
-    // create new account
-    let document = {username, password};
-    // w:1 ensures key is placed in properly
-    await collection.insertOne(document)
-    .then((response) => {
-      if ( response ) {
-        return res.send({
-          valid: true,
-          message: 'Welcome!'
+      } else {
+        if (err) {
+          console.log(err);
+        }
+        console.log("Adding new user")
+        // create new account
+        let document = {username, password};
+        // w:1 ensures key is placed in properly
+        collection.insertOne(document)
+        .then((response) => {
+          if ( response ) {
+            return res.send({
+              valid: true,
+              message: 'Welcome!'
+            });
+          }
+        })
+        .catch((e) => {
+          console.log(e.message);
+          return res.send({
+            valid: false,
+            message: 'Something went wrong with writing db'
+          });
         });
       }
-    })
-    .catch((e) => {
-      console.log(e.message);
-      return res.send({
-        valid: false,
-        message: 'Something went wrong with writing db'
-      });
-    });
+    };
+
+    // find user based off of user name
+    collection.findOne({ username }, checkExists);
+   
   });
 });
 
