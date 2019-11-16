@@ -20,3 +20,55 @@
 .App-link {
   color: #09d3ac;
 }
+
+.authenticate-container {
+  display: flex;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.login {
+  width: 50%
+}
+
+.sign-up {
+  width: 50%
+}
+
+.notes-container {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.notes-item {
+  display: flex;
+  justify-content: space-between;
+  margin: .25rem 0;
+}
+
+.header {
+  background: #1199ff;
+  height: 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-bottom: 3rem;
+}
+
+.nav-logo {
+  font-size: 2.5rem;
+  color: #ffffff;
+  min-width: 250px;
+}
+
+.nav-item {
+  margin: .5rem;
+}
+
+.nav-link {
+  font-size: 1.25rem;
+  text-decoration: none;
+}
