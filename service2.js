@@ -129,6 +129,41 @@ client.connect((err) => {
     // find user based off of user name
     collection.findOne({ username }, checkExists);
   });
+
+  /**
+   * Given token, checks if valid
+   * req: { token: "sometoken "}
+   * res: { valid: true/false }
+   */
+  app.post("/service2/auth", (req, res) => {
+    const token = req.body.token;
+    if ( !token ) {
+      return res.send({
+        valid: false
+      });
+    }
+
+    collection.findOne({ token })
+    .then((response) => {
+      if ( response ) { 
+        return res.send({
+          valid: true
+        });
+      } else {
+        return res.send({
+          valid: false
+        });
+      }
+    })
+    .catch((e) => {
+      console.log(e.message);
+      return res.send({
+        valid: false
+      });
+    })
+
+
+  });
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

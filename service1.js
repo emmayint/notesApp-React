@@ -32,23 +32,23 @@ app.use(express.json());
 
 app.use((req, res, next) => {
   console.log(req.cookies);
-  if (!req.cookies.username || !req.cookies.password) {
+  const token = req.cookies.token;
+  if (!token) {
     // null check
     res.status(403);
     return res.send({
       status: false,
     });
   }
-  const body = {
-    username: req.cookies.username,
-    password: req.cookies.password
-  };
 
-  const key = req.cookies.username + "_" + req.cookies.password;
-
-  redisClient.get(key, (err, cachedValue) => {
+  redisClient.get(token, (err, cachedValue) => {
     console.log(err);
     console.log("cached value is", cachedValue);
+
+    const body = {
+      token
+    };
+
     if (cachedValue !== null) {
       console.log("cache hit");
       if (cachedValue === "true") {
@@ -63,7 +63,7 @@ app.use((req, res, next) => {
       console.log("cache miss");
       // move rest of code in here
       axios
-        .post("http://localhost:3004/service2/login", body)
+        .post("http://localhost:3004/service2/auth", body)
         .then(res => {
           if (res.data.valid) {
             redisClient.set(key, true);
