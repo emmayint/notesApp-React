@@ -108,7 +108,7 @@ mongoClient.connect((err) => {
       });
     }
     const document = {body};
-    collection.findOne(document)
+    collection.insertOne(document)
     .then((response) => {
       if ( response ) {
         console.log("New note added");
