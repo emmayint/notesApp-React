@@ -66,10 +66,10 @@ app.use((req, res, next) => {
         .post("http://localhost:3004/service2/auth", body)
         .then(res => {
           if (res.data.valid) {
-            redisClient.set(key, true);
+            redisClient.set(token, true);
             return next();
           } else {
-            redisClient.set(key, false);
+            redisClient.set(token, false);
             res.status(403);
             return res.send({
               status: false
