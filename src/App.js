@@ -49,7 +49,29 @@ const App = ({ activeUsers }) => {
       password: md5(password)
     };
     axios
-      .post("/service2/", body, options)
+      .post("/service2/login", body, options)
+      .then(res => {
+        if (res.data.valid) {
+          document.cookie = `username=${username}`; //set cookies with key/value pairs
+          document.cookie = `password=${md5(password)}`; //set cookies with key/value pairs
+        } else {
+          document.cookie = "username="; //set cookies with key/value pairs
+          document.cookie = "password=";
+        }
+        // document.cookie = "username=username"; //set cookies with key/value pairs
+        // document.cookie = "password=password"; //set cookies with key/value pairs
+        console.log(res);
+      })
+      .catch(console.log);
+  };
+
+  const create = () => {
+    const body = {
+      username,
+      password: md5(password)
+    };
+    axios
+      .post("/service2/create", body, options)
       .then(res => {
         if (res.data.valid) {
           document.cookie = `username=${username}`; //set cookies with key/value pairs
@@ -88,8 +110,9 @@ const App = ({ activeUsers }) => {
           value={password}
           onChange={e => setPassword(e.target.value)}
         />
-        <button onClick={validate}>submit</button>
-        <button onClick={fetchProtectedData}>get data</button>
+        button onClick={validate}>login</button>
+        <button onClick={fetchProtectedData}>fetch data service1</button>
+        <button onClick={create}>signup</button>
       </header>
     </div>
   );
