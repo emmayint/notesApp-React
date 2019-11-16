@@ -26,6 +26,7 @@ const Auth = () => {
     const [password, setPassword] = React.useState("");
     const [newUsername, setNewUsername] = React.useState("");
     const [newPassword, setNewPassword] = React.useState("");
+    const [toggle, setToggle] = React.useState(true);
 
     const dispatch = useDispatch();
 
@@ -57,7 +58,7 @@ const Auth = () => {
 
 
 
-    const validate = () => {
+    const login = () => {
         const body = {
             username,
             password: md5(password)
@@ -65,17 +66,15 @@ const Auth = () => {
         axios
             .post("/service2/login", body, options)
             .then(res => {
-            if (res.data.valid) {
-                document.cookie = `username=${username}`; //set cookies with key/value pairs
-                document.cookie = `password=${md5(password)}`; //set cookies with key/value pairs
-                dispatch(setIsLoggedIn(true));
-            } else {
-                document.cookie = "username="; //set cookies with key/value pairs
-                document.cookie = "password=";
-            }
-            // document.cookie = "username=username"; //set cookies with key/value pairs
-            // document.cookie = "password=password"; //set cookies with key/value pairs
-            console.log(res);
+              if (res.data.valid) {
+                  document.cookie = `token=${res.data.token}`; //set cookies with key/value pairs
+                  dispatch(setIsLoggedIn(true));
+              } else {
+                  document.cookie = "token="; //set cookies with key/value pairs
+              }
+              // document.cookie = "username=username"; //set cookies with key/value pairs
+              // document.cookie = "password=password"; //set cookies with key/value pairs
+              console.log(res);
             })
             .catch(console.log);
     };
@@ -89,14 +88,11 @@ const Auth = () => {
             .post("/service2/create", body, options)
             .then(res => {
             if (res.data.valid) {
-                document.cookie = `username=${newUsername}`; //set cookies with key/value pairs
-                document.cookie = `password=${md5(newPassword)}`; //set cookies with key/value pairs
+                document.cookie = `token=${res.data.token}`; //set cookies with key/value pairs
+                dispatch(setIsLoggedIn(true));
             } else {
-                document.cookie = "username="; //set cookies with key/value pairs
-                document.cookie = "password=";
+                document.cookie = "token="; //set cookies with key/value pairs
             }
-            // document.cookie = "username=username"; //set cookies with key/value pairs
-            // document.cookie = "password=password"; //set cookies with key/value pairs
             console.log(res);
             })
             .catch(console.log);
@@ -137,37 +133,45 @@ const Auth = () => {
 
   return (
     <div className="authenticate-container">
-      <div className="login">
-        <h2>Login</h2>
-        {/* <img src={logo} className="App-logo" alt="logo" /> */}
-        <p>Username: <span><input value={username} onChange={e => setUsername(e.target.value)} /></span></p>
-        <p>Password: <span><input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-          /></span>
-        </p>
-
-        <button onClick={validate}>login</button>
-        {/* <button onClick={fetchProtectedData}>get data</button> */}
+      <div>
+        <button onClick={() => setToggle(true)}>Login Tab</button>
+        <button onClick={() => setToggle(false)}>Signup Tab</button>
       </div>
-      <div className="sign-up">
-        <h2>Sign Up</h2>
-        <p>Username: <span><input value={newUsername} onChange={e => setNewUsername(e.target.value)} /></span></p>
-        <p>Password: <span><input
-            type="password"
-            value={newPassword}
-            onChange={e => setNewPassword(e.target.value)}
-          /></span>
-        </p>
-        <button onClick={create}>signup</button>
+      {
+        toggle ? (<div className="login">
+          <h2>Login</h2>
+          {/* <img src={logo} className="App-logo" alt="logo" /> */}
+          <p>Username: <span><input value={username} onChange={e => setUsername(e.target.value)} /></span></p>
+          <p>Password: <span><input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+            /></span>
+          </p>
+
+          <button onClick={login}>login</button>
+          {/* <button onClick={fetchProtectedData}>get data</button> */}
+        </div>
+        ) : (
+          <div className="sign-up">
+            <h2>Sign Up</h2>
+            <p>Username: <span><input value={newUsername} onChange={e => setNewUsername(e.target.value)} /></span></p>
+            <p>Password: <span><input
+                type="password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+              /></span>
+            </p>
+            <button onClick={create}>signup</button>
 
 
 
-            {/* <button onClick={validate}>login</button>
-            <button onClick={fetchProtectedData}>fetch data service1</button>
-            <button onClick={create}>signup</button> */}
-      </div>
+                {/* <button onClick={validate}>login</button>
+                <button onClick={fetchProtectedData}>fetch data service1</button>
+                <button onClick={create}>signup</button> */}
+          </div>
+        )
+      }
     </div>
   );
 };
