@@ -7,27 +7,46 @@ const express = require("express");
 const redis = require("redis");
 const cookieParser = require("cookie-parser");
 const axios = require("axios");
+const { MongoClient, ObjectID } = require('mongodb');
 
-const client = redis.createClient();
+const redisClient = redis.createClient();
 
 const app = express();
-app.use(cookieParser());
+
 const port = 3001;
+
+// Connection URL
+const url = 'mongodb://localhost:27017';
+
+// Database Name
+const dbName = 'best_notes';
+
+// Create a new MongoClient
+const mongoClient = new MongoClient(url);
+
+
+app.use(cookieParser());
+app.use(express.json());
+
+
 
 app.use((req, res, next) => {
   console.log(req.cookies);
   if (!req.cookies.username || !req.cookies.password) {
     // null check
     res.status(403);
-    return res.send("You need access to this endpoint!");
+    return res.send({
+      status: false,
+    });
   }
   const body = {
     username: req.cookies.username,
     password: req.cookies.password
   };
+
   const key = req.cookies.username + "_" + req.cookies.password;
 
-  client.get(key, (err, cachedValue) => {
+  redisClient.get(key, (err, cachedValue) => {
     console.log(err);
     console.log("cached value is", cachedValue);
     if (cachedValue !== null) {
@@ -36,7 +55,9 @@ app.use((req, res, next) => {
         return next();
       } else {
         res.status(403);
-        return res.send("You need access to this endpoint!");
+        return res.send({
+          status: false
+        });
       }
     } else {
       console.log("cache miss");
@@ -45,12 +66,14 @@ app.use((req, res, next) => {
         .post("http://localhost:3004/service2/login", body)
         .then(res => {
           if (res.data.valid) {
-            client.set(key, true);
+            redisClient.set(key, true);
             return next();
           } else {
-            client.set(key, false);
+            redisClient.set(key, false);
             res.status(403);
-            return res.send("You need access to this endpoint!");
+            return res.send({
+              status: false
+            });
           }
         })
         .catch(console.log);
@@ -58,10 +81,123 @@ app.use((req, res, next) => {
   });
 });
 
-app.get("/service1/*", (req, res) => {
-  console.log(req.cookies);
-  // client.set("myKey", "myValue", "EX", 3000);
-  res.send("ads");
+// connect to server
+mongoClient.connect((err) => {
+  if (err) {
+    console.log(err);
+    process.exit(1);
+  }
+
+  console.log("Connected successfully to server");
+  const db = mongoClient.db(dbName);
+
+  // create collection. If already exists, ignores by default
+  const collection = db.collection('notes', function(err, collection) {});
+
+  /**
+   * Creates a new note
+   * req.body: { body: "note body" }
+   * res: { status: true/false if note created successfully }
+   */
+  app.post("/service1/create", (req, res) => {
+    const body = req.body.body;
+
+    if (!body) {
+      return res.send({
+        status: false,
+      });
+    }
+    const document = {body};
+    collection.findOne(document)
+    .then((response) => {
+      if ( response ) {
+        console.log("New note added");
+        return res.send({
+          status: true,
+        });
+      } else {
+        return res.send({
+          status: false,
+        });
+      }
+    })
+    .catch((e) => {
+      console.log(e.message);
+      return res.send({
+        status: false
+      });
+    });
+  });
+
+  /**
+   * Updates current note
+   * req.body: { body: "note body", id: Object_id }
+   * res: { status: true/false if note updated successfully }
+   */
+  app.post("/service1/update", (req, res) => {
+    if ( !req.body._id ) {
+      return res.send({
+        status: false
+      });
+    }
+    const updater = {
+      $set: {
+        body: req.body.body || '',
+      }
+    };
+    db.collection('notes')
+      // update vs findOneAndUpdate
+      .findOneAndUpdate({
+        _id: ObjectID.createFromHexString(req.body._id),
+      }, updater)
+      .then((response) => {
+        console.log(response);
+        if ( response ) {
+          console.log("Successfully updated note");
+          res.send({
+            status: true
+          });
+        } else {
+          // did something go wrong?
+          console.log("Something went wrong with update response");
+          res.send({
+            status: false
+          });
+        }
+      })
+      .catch((e) => {
+        console.log(e.message);
+        res.send({
+          status: false
+        });
+      });
+  });
+
+  /**
+   * Returns list of notes
+   * res: { notes: [{id:, body:}] }
+   */
+  app.get("/service1/list", (req, res) => {
+    db.collection('notes')
+      .find({})
+      .toArray()
+      .then((docs) => {
+        console.log(docs);
+        console.log("Succesfully got docs");
+        docs = docs || []; // some checking
+        res.send({
+          notes: docs
+        });
+      })
+      .catch((e) => {
+        console.log(e.message);
+        res.send({
+          notes: []
+        });
+      });
+  });
+
+
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

@@ -35,6 +35,7 @@ app.all("*", (req, res) => {
 
 app.listen(port, () => console.log(`Gateway on port ${port}!`));
 
+// !! keep the ws component here!! It does not work in fileserver.js
 const WebSocket = require("ws");
 
 const wss = new WebSocket.Server({ port: 4000 });
