@@ -6,101 +6,121 @@ const options = {
   withCredentials: true
 };
 
-const Notes = ({ notes }) => {
+const Notes = () => {
     const [text, setText] = React.useState("");
+    const [notes, setNotes] = React.useState([]);
+    const [displayError, setDisplayError] = React.useState(false);
+    const [activeNote, setActiveNote] = React.useState("test note");
+    const [activeNoteId, setActiveNoteId] = React.useState("");
+    const [showEdit, setShowEdit] = React.useState(false);
+
+    const listNotes = () => {
+      axios
+          .get("/service1/list")
+          .then(res => {
+            console.log(res.data.notes);
+            if (res.data.notes) {
+                setNotes(res.data.notes)
+            } else {
+                setDisplayError(true)
+            }
+          })
+          .catch(console.log);
+  };
+
+  const createNote = () => {
+    const body = {
+        body: text
+    };
+    axios
+        .post("/service1/create", body)
+        .then(res => {
+          if (res.status) {
+              listNotes()
+          } else {
+              setDisplayError(true)
+          }
+        })
+        .catch(console.log);
+  };
+
+  const updateNote = () => {
+    const body = {
+      _id: activeNoteId,
+      body: activeNote
+    };
+    axios
+        .post("/service1/update", body)
+        .then(res => {
+          if (res.status) {
+              listNotes()
+          } else {
+              setDisplayError(true)
+          }
+          console.log(res);
+        })
+        .catch(console.log);
+  };
 
     // hit service 1 to obtain notes list
     React.useEffect(() => {
-        axios
-          .get("/service1/", options)
-          .then(res => {
-            console.log(res);
-          })
-          .catch(console.log);
-    }, []); // VERY IMPORTANT NEEDS THE EMPTY ARRAY!!!
-
-    const fetchProtectedData = () => {
-        axios
-          .get("/service1/", options)
-          .then(res => {
-            console.log(res);
-          })
-          .catch(console.log);
-    };
-
-
-    const handleSubmit = () => {
-      const data = {
-        type: "SEND_MESSAGE",
-        newNote: text
-      };
-      // client to server
-      window.ws.send(JSON.stringify(data));
-      setText("");
-    };
+      listNotes();
+    }, []);
 
     return (
         <React.Fragment>
             <div className="notes-container">
                 <h2>Notes</h2>
-                <div>
-                    <input value={text} onChange={e => setText(e.target.value)} />
-                    <button onClick={handleSubmit}>Add Item</button>
+                {displayError && <p>Oh no! An error occurred.</p>}
+                <div className="notes-input-container">
+                    <input className="notes-input" value={text} onChange={e => setText(e.target.value)} />
+                    <button className="notes-input-button" onClick={createNote}>Add Note</button>
                 </div>
+                <br />
                 <div>
-                    {notes.map((note, i) => (
+                    {notes.map((item) => (
                         <div className="notes-item">
-                            <div key={i}>
-                                {note}
+                            <div id={item._id} className="notes-item-content">
+                                {item.body}
                             </div>
-                            <button>
+                            <button
+                              className="notes-edit-button"
+                              onClick={(e) => {
+                                setShowEdit(true);
+                                setActiveNote(document.getElementById(item._id).innerHTML);
+                                setActiveNoteId(item._id)
+                              }}
+                            >
                                 Edit
                             </button>
                         </div> 
                     ))}
                 </div>
-                <button onClick={fetchProtectedData}>contact service 1</button>
-            </div>
-
-
-
-
-{/* 
-            <div className="todo-list">
-
-        {todoList.map((item, index) => (
-          <div class="todo-item">
-            <div>
-              <input className="checkbox" type="checkbox" checked={item.done} data-index={index} onClick={  
-                () => {
-                  // onClick uses the item's index to locate item in state and toggles the 'done' boolean value
-                  const updatedList = [...todoList];
-                  updatedList[index].done = !updatedList[index].done
-                  setTodoList(updatedList);
+                {showEdit &&
+                  <div>
+                    <h2>Edit Note</h2>
+                    <input 
+                      className="notes-edit-input"
+                      value={activeNote}
+                      onChange={ e => {
+                        setActiveNote(e.target.value)
+                      }}
+                    ></input>
+                    <br/>
+                    <br/>
+                    <button 
+                      className="notes-update-button"
+                      onClick={() => {
+                        updateNote();
+                        setShowEdit(false)
+                    }}>
+                      Update Note
+                    </button>
+                  </div>
                 }
-              } />
-              <span className={todoList[index].done ? "done" : ""}>{item.text}</span>
             </div>
-            <button class="delete-button" onClick={
-              () => {
-                // onClick uses the item's index to locate and remove the item from state
-                const modifiedList = [...todoList];
-                modifiedList.splice(index, 1);
-                setTodoList(modifiedList);
-              }
-            }>DELETE</button>
-          </div>
-        ))}
-      </div> */}
-
-
-
         </React.Fragment>
     )
 }
 
-const mapStateToProps = state => ({
-    notes: state.notesReducer.notes
-  });
-  
-export default connect(mapStateToProps)(Notes);
+export default Notes;
