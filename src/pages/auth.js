@@ -83,7 +83,7 @@ const Auth = () => {
     const create = () => {
         const body = {
             username: newUsername,
-            password: md5(password)
+            password: md5(newPassword)
         };
         axios
             .post("/service2/create", body, options)

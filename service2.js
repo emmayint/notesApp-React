@@ -46,6 +46,7 @@ client.connect((err) => {
     }
     collection.findOne({ username })
     .then((response) => {
+      console.log(response);
       if ( response && response.password === password ) {
         console.log("Loggin user in");
         return res.send({
