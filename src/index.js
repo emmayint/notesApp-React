@@ -14,8 +14,21 @@ import { updateNotes } from "./redux/actions/notesActions";
 const ws = new WebSocket("ws://localhost:4000"); // build in class
 const store = createStore(rootReducer);
 
+const getCookieToken = () => {
+  let match = document.cookie.match(new RegExp('(&| )' + 'token' + '=([&;]+)'));
+  if (match) return match[2];
+  return "";
+};
+
 ws.onclose = () => {
-  console.log("connection has closed!");
+  const data = {
+    type: 'USER_DISCONNECT',
+    token: getCookieToken()
+  };
+  // log user out
+  // document.cookie = "token=";
+  // client to server
+  window.ws.send(JSON.stringify(data));
 };
 
 ws.onopen = () => {
