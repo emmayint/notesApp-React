@@ -67,8 +67,6 @@ app.use((req, res, next) => {
           if (res.data.valid) {
             redisClient.set(token, true);
             redisClient.incr("USERS", (err, updateValue) => {
-              // 
-              console.log(updateValue);
               updateUserCount();
             });
             return next();
@@ -274,7 +272,7 @@ wss.on("connection", ws => {
         break;
       case "USER_DISCONNECT":
         console.log("User is disconnecting");
-        userDisconnect(messageObject.token);
+        // userDisconnect(messageObject.token);
         break;
     }
     console.log(message);
