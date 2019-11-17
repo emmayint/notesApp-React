@@ -21,14 +21,14 @@ const getCookieToken = () => {
 };
 
 ws.onclose = () => {
-  const data = {
-    type: 'USER_DISCONNECT',
-    token: getCookieToken()
-  };
+  // const data = {
+  //   type: 'USER_DISCONNECT',
+  //   token: getCookieToken()
+  // };
   // log user out
   // document.cookie = "token=";
   // client to server
-  window.ws.send(JSON.stringify(data));
+  // window.ws.send(JSON.stringify(data));
 };
 
 ws.onopen = () => {
