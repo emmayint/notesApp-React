@@ -1,18 +1,25 @@
 import React from 'react';
 import axios from "axios";
 import { connect } from "react-redux";
+import {Redirect} from 'react-router-dom';
+// import {signalUpdateNotes} from '../redux/actions/notesActions'
 
 const options = {
   withCredentials: true
 };
 
-const Notes = () => {
+const Notes = ({activeUsers}) => {
     const [text, setText] = React.useState("");
     const [notes, setNotes] = React.useState([]);
     const [displayError, setDisplayError] = React.useState(false);
     const [activeNote, setActiveNote] = React.useState("test note");
     const [activeNoteId, setActiveNoteId] = React.useState("");
     const [showEdit, setShowEdit] = React.useState(false);
+    const [redirect, setRedirect] = React.useState(false);
+
+    const redirectLogin = () => {
+      setRedirect(true);
+    };
 
     const listNotes = () => {
       axios
@@ -25,7 +32,9 @@ const Notes = () => {
                 setDisplayError(true)
             }
           })
-          .catch(console.log);
+          .catch((e) => {
+            redirectLogin();
+          });
   };
 
   const createNote = () => {
@@ -36,12 +45,15 @@ const Notes = () => {
         .post("/service1/create", body)
         .then(res => {
           if (res.status) {
-              listNotes()
+              setText("");
+              listNotes();
           } else {
               setDisplayError(true)
           }
         })
-        .catch(console.log);
+        .catch((e) => {
+          redirectLogin();
+        });
   };
 
   const updateNote = () => {
@@ -59,17 +71,26 @@ const Notes = () => {
           }
           console.log(res);
         })
-        .catch(console.log);
+        .catch((e) => {
+          redirectLogin();
+        });
   };
 
     // hit service 1 to obtain notes list
     React.useEffect(() => {
       listNotes();
+      // signalUpdateNotes();
     }, []);
 
     return (
         <React.Fragment>
+            {
+              redirect? <Redirect to='/auth'></Redirect>: null
+            }
             <div className="notes-container">
+                <div>
+                  Total users: {activeUsers}
+                </div>
                 <h2>Notes</h2>
                 {displayError && <p>Oh no! An error occurred.</p>}
                 <div className="notes-input-container">
@@ -78,8 +99,8 @@ const Notes = () => {
                 </div>
                 <br />
                 <div>
-                    {notes.map((item) => (
-                        <div className="notes-item">
+                    {notes.map((item, i) => (
+                        <div className="notes-item" key={i}>
                             <div id={item._id} className="notes-item-content">
                                 {item.body}
                             </div>
@@ -123,4 +144,9 @@ const Notes = () => {
     )
 }
 
-export default Notes;
+const mapStateToProps = state => ({
+  activeUsers: state.userReducer.activeUsers,
+  // notes: state.notesReducer.notes
+});
+
+export default connect(mapStateToProps)(Notes);

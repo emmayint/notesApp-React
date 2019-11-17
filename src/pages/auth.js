@@ -5,6 +5,8 @@ import axios from "axios";
 // import "./App.css";
 import md5 from "md5";
 import { setIsLoggedIn } from "../redux/actions/userActions";
+import {Redirect} from 'react-router-dom';
+
 
 const options = {
   withCredentials: false
@@ -16,6 +18,7 @@ const Auth = () => {
   const [newUsername, setNewUsername] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
   const [toggle, setToggle] = React.useState(true);
+  const [logIn, setLogIn] = React.useState(false);
 
   const dispatch = useDispatch();
 
@@ -30,6 +33,7 @@ const Auth = () => {
         if (res.data.valid) {
           document.cookie = `token=${res.data.token}`; //set cookies with key/value pairs
           dispatch(setIsLoggedIn(true));
+          setLogIn(true);
         } else {
           document.cookie = "token="; //set cookies with key/value pairs
         }
@@ -51,6 +55,7 @@ const Auth = () => {
         if (res.data.valid) {
           document.cookie = `token=${res.data.token}`; //set cookies with key/value pairs
           dispatch(setIsLoggedIn(true));
+          setLogIn(true);
         } else {
           document.cookie = "token="; //set cookies with key/value pairs
         }
@@ -59,17 +64,11 @@ const Auth = () => {
       .catch(console.log);
   };
 
-  const fetchProtectedData = () => {
-    axios
-      .get("/service1/", options)
-      .then(res => {
-        console.log(res);
-      })
-      .catch(console.log);
-  };
-
   return (
     <div className="authenticate-container">
+      {
+        logIn? <Redirect to='/notes'></Redirect>: null
+      }
       <div>
         <button onClick={() => setToggle(true)}>Login Tab</button>
         <button onClick={() => setToggle(false)}>Signup Tab</button>
