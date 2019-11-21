@@ -34,3 +34,56 @@ app.all("*", (req, res) => {
 });
 
 app.listen(port, () => console.log(`Gateway on port ${port}!`));
+
+const WebSocket = require("ws");
+
+const wss = new WebSocket.Server({ port: 4000 });
+
+const broadcastMessage = message => {
+  wss.clients.forEach(client => {
+    // broadcast
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(message)); // server to client
+    }
+  });
+};
+
+const updateUserCount = () => {
+  broadcastMessage({
+    type: "UPDATE_USER_COUNT", // websocket is single channel, need a tag
+    count: wss.clients.size
+  });
+};
+
+// wss: connection to the whole?
+wss.on("connection", ws => {
+  // a connection to a client
+  console.log("Someone has connected");
+  broadcastMessage("someone has connected!");
+  updateUserCount();
+
+  ws.on("message", message => {
+    // handlesubmit in home.js trigers this
+    const messageObject = JSON.parse(message);
+    switch (messageObject.type) {
+      case "SEND_MESSAGE":
+        broadcastAllMessages(messageObject.newNote);
+        break;
+      case "USER_DISCONNECT":
+        console.log("User is disconnecting");
+        // userDisconnect(messageObject.token); // doesn't work cause flow does not reach here when socket disconnects
+        break;
+    }
+    console.log(message);
+  });
+
+  ws.on("close", () => {
+    // broadcastMessage("someone has disconnected!");
+    updateUserCount();
+    console.log("someone has disconnected!");
+  });
+
+  ws.on("error", e => {
+    console.log(e);
+  });
+});

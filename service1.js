@@ -67,7 +67,7 @@ app.use((req, res, next) => {
           if (res.data.valid) {
             redisClient.set(token, true);
             redisClient.incr("USERS", (err, updateValue) => {
-              updateUserCount();
+              // updateUserCount();
             });
             return next();
           } else {
@@ -205,86 +205,3 @@ mongoClient.connect((err) => {
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
 
-// !! keep the ws component here!! It does not work in fileserver.js
-const WebSocket = require("ws");
-
-const wss = new WebSocket.Server({ port: 4000 });
-
-const broadcastMessage = message => {
-  wss.clients.forEach(client => {
-    // broadcast
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(message)); // server to client
-    }
-  });
-};
-
-const userDisconnect = (token) => {
-  // remove user from cache
-  console.log("User disconnect");
-  redisClient.del(token, (err, response) => {
-    if ( response ) {
-      // if deleted successfully
-      redisClient.decr("USERS", (err, cachedValue) => {
-        console.log(err);
-        console.log(cachedValue);
-        broadcastMessage({
-          type: "UPDATE_USER_COUNT", // websocket is single channel, need a tag
-          count: cachedValue
-        });
-      });
-    }
-  });
-  
-};
-
-const updateUserCount = () => {
-  redisClient.get("USERS", (err, cachedValue) => {
-    console.log(err);
-    console.log(cachedValue);
-    broadcastMessage({
-      type: "UPDATE_USER_COUNT", // websocket is single channel, need a tag
-      count: cachedValue
-    });
-  });
-};
-
-const signalToUpdateMessages = () => {
-  broadcastMessage({
-    type: "UPDATE_NOTES", // websocket is single channel, need a tag
-    status: true
-  });
-};
-
-// wss: connection to the whole?
-wss.on("connection", ws => {
-  // a connection to a client
-  console.log("Someone has connected");
-  broadcastMessage("someone has connected!");
-  // updateUserCount();
-
-  ws.on("message", message => {
-    // handlesubmit in home.js trigers this
-    const messageObject = JSON.parse(message);
-    switch (messageObject.type) {
-      case "SEND_MESSAGE":
-        broadcastAllMessages(messageObject.newNote);
-        break;
-      case "USER_DISCONNECT":
-        console.log("User is disconnecting");
-        // userDisconnect(messageObject.token);
-        break;
-    }
-    console.log(message);
-  });
-
-  ws.on("close", () => {
-    // broadcastMessage("someone has disconnected!");
-    // updateUserCount();
-    console.log("someone has disconnected!");
-  });
-
-  ws.on("error", e => {
-    console.log(e);
-  });
-});
