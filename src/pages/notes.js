@@ -88,9 +88,6 @@ const Notes = ({activeUsers}) => {
               redirect? <Redirect to='/auth'></Redirect>: null
             }
             <div className="notes-container">
-                <div>
-                  Total users: {activeUsers}
-                </div>
                 <h2>Notes</h2>
                 {displayError && <p>Oh no! An error occurred.</p>}
                 <div className="notes-input-container">
